@@ -1,0 +1,306 @@
+
+---
+output: pdf_document
+---
+\begin{center}
+
+  {\LARGE FUNDAÇÃO GETULIO VARGAS}\\
+  \vspace{7cm}
+
+  \textcolor{blue}{\large\textbf{{ANALISE EXPLORATÓRIA DE DADOS E VISUALIZAÇÃO}}}\\
+  \vspace{2cm}
+
+  {\large {LUIS ANTONIO ALVES}\\}
+
+  \vspace{9,9cm}
+  {\large {São Paulo}}\\
+  \vspace{0.15cm}
+  {\large {Abril 2021}}
+  %\vspace{0.15cm}
+\end{center}
+
+\thispagestyle{empty}
+
+\newpage
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(dplyr) 
+```
+
+
+\begin{center}
+  \textcolor{blue}{\large\textbf FAMILIARIZAÇÃO COM O DPLYR}\\
+  \vspace{1cm}
+\end{center}
+
+\begin{center}
+  {\large\textbf Utilize a base imdb nos exercícios a seguir.}\\
+  \vspace{1cm}
+\end{center}
+
+
+```{r echo=FALSE}
+imdb <- readr::read_rds("E:\\FGV\\AEDV35\\Lista 4\\4Lista\\imdb.rds")
+```
+1. Teste aplicar a **função glimpse()** do pacote {dplyr} à base imdb. O que ela faz?
+```{r echo=TRUE}
+glimpse(imdb)
+```
+\  
+
+2. Crie uma tabela com apenas as colunas titulo, diretor, e orcamento. Salve em um objeto chamado imdb_simples.
+```{r echo=TRUE}
+
+imdb_simples <-imdb %>%
+  select(titulo, diretor, orcamento)
+imdb_simples
+```
+
+\newpage
+
+3. Selecione apenas as colunas ator_1, ator_2 e ator_3 usando o ajudante **contains()**.
+```{r echo=TRUE}
+
+imdb %>%
+  select(contains("ator"))
+```
+\  
+
+4. Usando a função select() **(e seus ajudantes)**, escreva códigos que retornem a base IMDB sem as colunas ator_1, ator_2 e ator_3. Escreva todas as soluções diferentes que você conseguir pensar:
+
+  a)
+```{r echo=TRUE}
+
+imdb %>%
+  select(-contains("ator"))
+
+```
+
+\newpage
+
+  b)
+```{r echo=TRUE}
+
+imdb %>%
+  select(-starts_with("ator"))
+
+```
+  c)
+```{r echo=TRUE}
+
+imdb %>%
+  select(-ator_1, -ator_2, -ator_3)
+
+```
+\newpage
+
+5. Ordene os filmes em ordem crescente de ano e decrescente de receita e salve em um objeto chamado **filmes_ordenados**.
+```{r echo=TRUE}
+
+filmes_ordenados <-imdb %>%
+  arrange(ano, desc(receita))
+filmes_ordenados
+```
+\   
+
+6. Selecione apenas as colunas titulo e orcamento e então ordene de forma decrescente pelo orcamento.
+```{r echo=TRUE}
+
+imdb %>%
+  select(titulo, orcamento)  %>%
+  arrange(desc(orcamento))
+```
+\newpage
+
+7. Crie um objeto chamado **filmes_pb** apenas com filmes preto e branco.
+
+```{r echo=TRUE}
+filmes_pb <-imdb %>% 
+    filter(cor %in% c("Black and White"))
+filmes_pb
+```
+\   
+
+8. Crie um objeto chamado curtos_legais com filmes de 90 minutos ou menos de duração e nota no imdb maior do que 8.5.
+
+```{r echo=TRUE}
+curtos_legais <-imdb %>% 
+  filter(duracao <= 90, nota_imdb > 8.5) %>% 
+  select(duracao, nota_imdb)
+curtos_legais
+```
+\newpage
+
+9. Retorne tabelas **(tibbles)** apenas com:
+
+  a. filmes coloridos anteriores a 1950;
+  
+```{r echo=TRUE}
+imdb %>% 
+  filter(cor %in% c("Color"), ano < 1950) %>% 
+  select(titulo, cor, ano)
+```
+\  
+
+  b. filmes do “Woody Allen” ou do “Wes Anderson”;
+  
+```{r echo=TRUE}
+imdb %>% 
+  filter(ator_1 %in% c('Woody Allen', "Wes Anderson")) %>% 
+  select(titulo, ator_1, ator_2, ator_3, ano)
+```
+\newpage
+  c. filmes do “Steven Spielberg” ordenados de forma decrescente por ano, mostrando apenas as colunas      titulo e ano;
+    
+```{r echo=TRUE}
+imdb %>% 
+  filter(diretor %in% c('Steven Spielberg')) %>% 
+  arrange(ano)  %>% 
+  select(titulo, ano)
+```
+\    
+
+  d. filmes que tenham “Action” ou “Comedy” entre os seus gêneros;
+    
+```{r echo=TRUE}
+imdb %>% 
+  filter(generos %in% c('Action', "Comedy")) %>% 
+  select(titulo, generos, ano)
+```
+\newpage
+
+  e. filmes que tenham “Action” e “Comedy” entre os seus gêneros e tenha nota_imdb maior que 8;
+    
+```{r echo=TRUE}
+imdb %>% 
+  filter(generos %in% c('Action', "Comedy"), nota_imdb > 8) %>% 
+  select(titulo, generos, nota_imdb)
+```
+\    
+
+  f. filmes que não possuem informação tanto de receita quanto de orçamento **(isto é, possuem NA em         ambas as colunas)**.
+    
+```{r echo=TRUE}
+imdb %>% 
+  filter(receita %in% c('NA'), orcamento %in% c('NA')) %>% 
+  select(titulo, receita, orcamento)
+```
+\    
+
+
+10. Crie uma coluna chamada **prejuizo=(orcamento - receita)** e salve a nova tabela em um objeto chamado **imdb_prejuizo**. Em seguida, filtre apenas os filmes que deram prejuízo e ordene a tabela por ordem crescente de prejuízo.
+    a) (orcamento - receita)
+```{r echo=TRUE}
+
+imdb_prejuizo <-imdb %>%
+  mutate(prejuizo = (orcamento - receita) ) %>% 
+  filter((orcamento - receita) >= 0 ) %>% 
+  arrange(desc(prejuizo)) %>% 
+  select(titulo, orcamento, receita, prejuizo)
+imdb_prejuizo
+```
+\newpage
+  b) (receita - orcamento)
+```{r echo=TRUE}
+
+imdb_prejuizo <-imdb %>%
+  mutate(prejuizo = (receita - orcamento ) ) %>% 
+  filter((receita - orcamento ) < 0 ) %>% 
+  arrange(desc(prejuizo)) %>% 
+  select(titulo, orcamento, receita, prejuizo)
+imdb_prejuizo
+```
+\  
+
+11. Fazendo **apenas uma chamada da função mutate()**, crie as seguintes colunas novas na base imdb:
+  a. lucro = receita - orcamento
+  b. lucro_medio
+  c. lucro_relativo = (lucro - lucro_medio)/lucro_medio
+  d. houve_lucro = ifelse(lucro > 0, "sim", "não")
+
+```{r echo=TRUE}
+
+imdb %>%
+mutate(lucro = (receita - orcamento ),
+       lucro_medio = mean(lucro), 
+       lucro_relativo = var(lucro - lucro_medio/lucro_medio),
+       houve_lucro = ifelse(lucro > 0, "sim", "não")) %>% 
+select(titulo, orcamento, receita, lucro, lucro_medio, lucro_relativo, houve_lucro)
+```
+\newpage
+
+12. Calcule a **duração média e mediana** dos filmes da base.
+```{r echo=TRUE}
+
+imdb %>%
+mutate(lucro = (receita - orcamento ),
+       medio_lucro = mean(lucro, na.rm = TRUE), 
+       mediana_lucro =  median(lucro - medio_lucro/medio_lucro, na.rm = TRUE)) %>% 
+select(titulo, orcamento, receita, lucro, medio_lucro, mediana_lucro)
+```
+\  
+
+13. Calcule o **lucro médio** dos filmes com **duração menor que 60 minutos**.
+```{r echo=TRUE}
+
+imdb %>%
+mutate(lucro = (receita - orcamento ), medio_lucro = mean(lucro, na.rm = TRUE)) %>% 
+    filter(duracao < 60) %>% 
+  select(titulo, receita, lucro, medio_lucro, duracao)
+```
+\newpage
+
+14. Apresente na mesma tabela o lucro médio dos filmes com duracao menor que 60 minutos e o lucro médio dos filmes com duracao maior ou igual a 60 minutos.
+```{r echo=TRUE}
+
+imdb %>%
+group_by(duracao < 60, duracao > 60 ) %>% 
+    mutate(lucro = (receita - orcamento),
+           lucro_medio = mean(lucro, na.rm = TRUE)) %>%
+  select(titulo, receita, lucro, lucro_medio, duracao)
+```
+
+\  
+
+15. Retorne tabelas (tibbles) apenas com:
+  a. a nota IMDB média dos filmes por tipo de classificacao;
+```{r echo=TRUE}
+
+imdb %>%
+group_by(classificacao) %>% 
+    summarise(nota_media=mean(nota_imdb, na.rm = TRUE)) %>%
+  select(classificacao, nota_media)
+```  
+\newpage
+
+  b. a receita média e mediana dos filmes por ano;
+```{r echo=TRUE}
+
+imdb %>%
+group_by(ano) %>% summarise(
+              receita_media=mean(receita, na.rm = FALSE),
+              receita_mediana=median(receita, na.rm = FALSE)) %>%
+  select(ano, receita_media, receita_mediana)
+```  
+
+\  
+
+  c. apenas o nome dos diretores com mais de 10 filmes.
+```{r echo=TRUE}
+
+imdb %>%
+group_by(diretor)
+```  
+
+\  
+
+
+## Incluindo Gráficos
+
+
+
+```{r imdb, echo=TRUE}
+
+```
